@@ -1,5 +1,7 @@
 import json
 import os
+import tkinter as tk
+from tkinter import ttk, messagebox
 
 def carregar_tabela_precos(arquivo):
     """
@@ -32,116 +34,109 @@ def encontrar_combinacao(combinacoes, acabamento, papel, faca, impressao):
             return comb
     return None
 
-def obter_opcao(titulo, opcoes):
-    """
-    Exibe um menu com as opções e retorna o valor descritivo escolhido.
-    """
-    while True:
-        print(titulo)
-        for key, descricao in opcoes.items():
-            print(f"{key}. {descricao}")
-        escolha = input("Digite a sua opção: ").strip()
-        if escolha in opcoes:
-            return opcoes[escolha]
+class BudgetApp(tk.Tk):
+    def __init__(self, tabela_arquivo):
+        super().__init__()
+        self.title("Sistema de Orçamento")
+        self.tabela_arquivo = tabela_arquivo
+        self.combinacoes = carregar_tabela_precos(tabela_arquivo)
+        self.configure(padx=10, pady=10)
+        self.create_widgets()
+    
+    def create_widgets(self):
+        # Linha 0: Nome do orçamento
+        tk.Label(self, text="Nome do orçamento:").grid(row=0, column=0, sticky="w")
+        self.nome_entry = tk.Entry(self, width=40)
+        self.nome_entry.grid(row=0, column=1, padx=5, pady=5)
+
+        # Linha 1: Opção Acabamento
+        tk.Label(self, text="Acabamento:").grid(row=1, column=0, sticky="w")
+        self.opcoes_acabamento = [
+            "Verniz UV Total Frente",
+            "Laminação Fosca",
+            "Laminação Fosca c/ Verniz Localizado"
+        ]
+        self.acabamento_cb = ttk.Combobox(self, values=self.opcoes_acabamento, state="readonly", width=37)
+        self.acabamento_cb.grid(row=1, column=1, padx=5, pady=5)
+        self.acabamento_cb.current(0)
+
+        # Linha 2: Opção Papel
+        tk.Label(self, text="Papel:").grid(row=2, column=0, sticky="w")
+        self.opcoes_papel = [
+            "Papel Couchê 250g",
+            "Papel Couchê 300g",
+            "Papel Supremo 300g",
+            "Papel Kraft 240g"
+        ]
+        self.papel_cb = ttk.Combobox(self, values=self.opcoes_papel, state="readonly", width=37)
+        self.papel_cb.grid(row=2, column=1, padx=5, pady=5)
+        self.papel_cb.current(0)
+
+        # Linha 3: Opção Impressão
+        tk.Label(self, text="Impressão:").grid(row=3, column=0, sticky="w")
+        self.opcoes_impressao = [
+            "Impressão apenas frente",
+            "Impressão frente e verso"
+        ]
+        self.impressao_cb = ttk.Combobox(self, values=self.opcoes_impressao, state="readonly", width=37)
+        self.impressao_cb.grid(row=3, column=1, padx=5, pady=5)
+        self.impressao_cb.current(0)
+
+        # Linha 4: Opção Faca
+        tk.Label(self, text="Faca:").grid(row=4, column=0, sticky="w")
+        self.opcoes_faca = [
+            "4,25x4,8cm",
+            "8,8x4,8cm",
+            "9,94x8,8cm"
+        ]
+        self.faca_cb = ttk.Combobox(self, values=self.opcoes_faca, state="readonly", width=37)
+        self.faca_cb.grid(row=4, column=1, padx=5, pady=5)
+        self.faca_cb.current(0)
+
+        # Linha 5: Botão de Consulta
+        self.consulta_btn = tk.Button(self, text="Consultar Preços", command=self.consultar_precos, width=40)
+        self.consulta_btn.grid(row=5, column=0, columnspan=2, pady=10)
+
+        # Linha 6: Área de Resultados
+        self.result_text = tk.Text(self, width=50, height=10)
+        self.result_text.grid(row=6, column=0, columnspan=2, padx=5, pady=5)
+    
+    def consultar_precos(self):
+        # Recupera os valores das entradas
+        nome = self.nome_entry.get().strip()
+        acabamento = self.acabamento_cb.get()
+        papel = self.papel_cb.get()
+        impressao = self.impressao_cb.get()
+        faca = self.faca_cb.get()
+
+        # Limpa a área de resultados
+        self.result_text.delete(1.0, tk.END)
+
+        # Exibe o resumo do orçamento
+        self.result_text.insert(tk.END, f"*{nome}*\n")
+        self.result_text.insert(tk.END, f"- {papel}\n")
+        self.result_text.insert(tk.END, f"- {acabamento}\n")
+        self.result_text.insert(tk.END, f"- {impressao}\n\n")
+
+        # Procura a combinação na tabela
+        combinacao_encontrada = encontrar_combinacao(self.combinacoes, acabamento, papel, faca, impressao)
+        if combinacao_encontrada:
+            for quantidade, preco in combinacao_encontrada["precos"].items():
+                # Extrai os dígitos para calcular o preço por unidade
+                quantidade_numerica = int(''.join(filter(str.isdigit, quantidade)))
+                preco_unitario = preco / quantidade_numerica
+
+                # Formata os valores monetários (apenas o preço, não a quantidade)
+                preco_total_str = f"R${preco:.2f}".replace('.', ',')
+                preco_unit_str = f"R${preco_unitario:.2f}".replace('.', ',')
+
+                # Exibe a linha de preço sem ":" após a quantidade
+                self.result_text.insert(tk.END, f"{quantidade} {preco_total_str} ({preco_unit_str}/un.)\n")
         else:
-            print("Opção inválida, tente novamente.\n")
-
-def main():
-    tabela_arquivo = "tabela_precos.json"
-    combinacoes = carregar_tabela_precos(tabela_arquivo)
-
-    # Coleta do nome do orçamento
-    nome = input("Informe o nome do orçamento: ").strip()
-
-    # Definição das opções para cada categoria  
-    # (os textos abaixo devem bater exatamente com os cadastrados no JSON)
-    opcoes_acabamento = {
-        '1': "Verniz UV Total Frente",
-        '2': "Laminação Fosca",
-        '3': "Laminação Fosca c/ Verniz Localizado"
-    }
-
-    opcoes_papel = {
-        '1': "Papel Couchê 250g",
-        '2': "Papel Couchê 300g",
-        '3': "Papel Supremo 300g",
-        '4': "Papel Kraft 240g"
-    }
-
-    opcoes_impressao = {
-        '1': "Impressão apenas frente",
-        '2': "Impressão frente e verso"
-    }
-
-    opcoes_faca = {
-        '1': "4,25x4,8cm",
-        '2': "8,8x4,8cm",
-        '3': "9,94x8,8cm"
-    }
-    
-    # Obtenção das escolhas do usuário
-    acabamento = obter_opcao("Informe a sua opção desejada (Acabamento):", opcoes_acabamento)
-    print()
-    papel = obter_opcao("Qual é o seu papel desejado?", opcoes_papel)
-    print()
-    impressao = obter_opcao("Escolha o tipo de impressão:", opcoes_impressao)
-    print()
-    faca = obter_opcao("Qual é a sua faca desejada?", opcoes_faca)
-    print()
-    
-    # Exibe o resumo do orçamento
-    print(f"\n*{nome}*")
-    print(f"- {papel}")
-    print(f"- {acabamento}")
-    print(f"- {impressao}")
-    print()
-    
-    # Procura pela combinação na tabela de preços usando todos os campos
-    combinacao_encontrada = encontrar_combinacao(combinacoes, acabamento, papel, faca, impressao)
-
-    if combinacao_encontrada:
-        for quantidade, preco in combinacao_encontrada["precos"].items():
-            # Extrai a parte numérica para calcular o preço por unidade
-            quantidade_numerica = int(''.join(filter(str.isdigit, quantidade)))
-            preco_unitario = preco / quantidade_numerica
-
-             # Formata os valores monetários: apenas os números convertidos para string com duas casas e vírgula.
-            preco_total_str = f"R${preco}".replace('.', ',')
-            preco_unit_str = f"R${preco_unitario:.2f}".replace('.', ',')
-
-            # Exibe a quantidade sem nenhum caractere extra.
-            print(f"{quantidade} {preco_total_str} ({preco_unit_str}/un.)")
-    else:
-        print("\nNão existe uma tabela de preços cadastrada para essa combinação.")
-        resposta = input("Deseja cadastrar uma nova tabela de preços para essa combinação? (s/n): ").lower().strip()
-        if resposta == 's':
-            nova_tabela = {}
-            while True:
-                quantidade = input("Informe a quantidade (ex.: 200unid): ").strip()
-                preco_str = input("Informe o preço total: ").strip()
-                try:
-                    preco = float(preco_str)
-                except ValueError:
-                    print("Preço inválido, tente novamente.\n")
-                    continue
-                # Converte para inteiro se não houver parte decimal
-                if preco.is_integer():
-                    preco = int(preco)
-
-                nova_tabela[quantidade] = preco
-                mais = input("Deseja adicionar mais uma opção? (s/n): ").lower().strip()
-                if mais != 's':
-                    break
-            nova_combinacao = {
-                "acabamento": acabamento,
-                "papel": papel,
-                "faca": faca,
-                "impressao": impressao,
-                "precos": nova_tabela
-            }
-            combinacoes.append(nova_combinacao)
-            salvar_tabela_precos(tabela_arquivo, combinacoes)
-            print("Nova tabela de preços cadastrada com sucesso!")
+            self.result_text.insert(tk.END, "\nNão existe uma tabela de preços cadastrada para essa combinação.")
+            messagebox.showinfo("Informação", "Combinação não encontrada.\nConsidere cadastrar uma nova tabela de preços.")
 
 if __name__ == "__main__":
-    main()
+    tabela_arquivo = "tabela_precos.json"
+    app = BudgetApp(tabela_arquivo)
+    app.mainloop()
