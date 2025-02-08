@@ -21,17 +21,6 @@
                 "500unid": 209,
                 "1000unid": 259
             }
-        },
-        {
-            "acabamento": "Verniz UV Total Frente",
-            "papel": "Papel Couchê 300g",
-            "faca": "4,25x4,8cm",
-            "impressao": "Impressão apenas frente",
-            "precos": {
-                "200unid.": 149,
-                "500unid.": 169,
-                "1000unid.": 209
-            }
         }
     ]
 }
