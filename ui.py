@@ -88,11 +88,10 @@ class BudgetApp(tk.Tk):
 
         combinacao_encontrada = encontrar_combinacao(self.combinacoes, acabamento, papel, faca, impressao)
         if combinacao_encontrada:
-            self.result_text.insert(tk.END, "--- Tabela de Preços ---\n")
             for quantidade, preco in combinacao_encontrada["precos"].items():
                 quantidade_numerica = int(''.join(filter(str.isdigit, quantidade)))
                 preco_unitario = preco / quantidade_numerica
-                preco_total_str = f"R${preco:.2f}".replace('.', ',')
+                preco_total_str = f"R${preco}"
                 preco_unit_str = f"R${preco_unitario:.2f}".replace('.', ',')
                 self.result_text.insert(tk.END, f"{quantidade} {preco_total_str} ({preco_unit_str}/un.)\n")
         else:
