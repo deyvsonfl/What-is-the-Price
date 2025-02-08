@@ -1,0 +1,22 @@
+{
+    "acabamento": [
+        "Verniz UV Total Frente",
+        "Laminação Fosca",
+        "Laminação Fosca c/ Verniz Localizado"
+    ],
+    "papel": [
+        "Papel Couchê 250g",
+        "Papel Couchê 300g",
+        "Papel Supremo 300g",
+        "Papel Kraft 240g"
+    ],
+    "impressao": [
+        "Impressão apenas frente",
+        "Impressão frente e verso"
+    ],
+    "faca": [
+        "4,25x4,8cm",
+        "8,8x4,8cm",
+        "9,94x8,8cm"
+    ]
+}
