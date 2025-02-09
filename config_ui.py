@@ -1,89 +1,46 @@
 import tkinter as tk
 from tkinter import messagebox
-import json
-import os
+import config_handler
 
-CONFIG_FILE = "config.json"
-
-def carregar_config(arquivo=CONFIG_FILE):
-    if os.path.exists(arquivo):
-        with open(arquivo, "r", encoding="utf-8") as f:
-            return json.load(f)
-    else:
-        # Configuração padrão
-        return {
-            "acabamento": ["Verniz UV Total Frente", "Laminação Fosca", "Laminação Fosca c/ Verniz Localizado"],
-            "papel": ["Papel Couchê 250g", "Papel Couchê 300g", "Papel Supremo 300g", "Papel Kraft 240g"],
-            "impressao": ["Impressão apenas frente", "Impressão frente e verso"],
-            "faca": ["4,25x4,8cm", "8,8x4,8cm", "9,94x8,8cm"]
-        }
-
-def salvar_config(config, arquivo=CONFIG_FILE):
-    with open(arquivo, "w", encoding="utf-8") as f:
-        json.dump(config, f, indent=4, ensure_ascii=False)
-
-class ConfigurationUI(tk.Toplevel):
+class AdvancedConfigUI(tk.Toplevel):
     def __init__(self, master=None):
         super().__init__(master)
-        self.title("Configuração das Opções")
+        self.title("Configuração Avançada")
         self.configure(padx=10, pady=10)
-        self.config_data = carregar_config()
+        self.config_data = config_handler.load_config()
         self.create_widgets()
-    
+
     def create_widgets(self):
-        self.frames = {}
-        categories = ["acabamento", "papel", "impressao", "faca"]
-        row = 0
-        for cat in categories:
-            frame = tk.LabelFrame(self, text=cat.capitalize(), padx=5, pady=5)
-            frame.grid(row=row, column=0, padx=5, pady=5, sticky="nsew")
-            self.frames[cat] = frame
-            row += 1
-        
-        self.listboxes = {}
-        for cat, frame in self.frames.items():
-            lb = tk.Listbox(frame, width=40, height=4)
-            lb.grid(row=0, column=0, columnspan=2, padx=5, pady=5)
-            for option in self.config_data.get(cat, []):
-                lb.insert(tk.END, option)
-            self.listboxes[cat] = lb
-            
-            entry = tk.Entry(frame, width=30)
-            entry.grid(row=1, column=0, padx=5, pady=2)
-            setattr(self, f"{cat}_entry", entry)
-            
-            btn_add = tk.Button(frame, text="Adicionar", command=lambda c=cat: self.adicionar_opcao(c))
-            btn_add.grid(row=1, column=1, padx=5, pady=2)
-            
-            btn_remove = tk.Button(frame, text="Remover", command=lambda c=cat: self.remover_opcao(c))
-            btn_remove.grid(row=2, column=0, columnspan=2, padx=5, pady=2)
-        
-        btn_save = tk.Button(self, text="Salvar Configurações", command=self.salvar_configuracoes, width=30)
-        btn_save.grid(row=row, column=0, pady=10)
-    
-    def adicionar_opcao(self, categoria):
-        entry = getattr(self, f"{categoria}_entry")
-        nova_opcao = entry.get().strip()
-        if nova_opcao:
-            lb = self.listboxes[categoria]
-            lb.insert(tk.END, nova_opcao)
-            entry.delete(0, tk.END)
-        else:
-            messagebox.showwarning("Aviso", "Digite uma opção válida.")
-    
-    def remover_opcao(self, categoria):
-        lb = self.listboxes[categoria]
-        selected = lb.curselection()
-        if not selected:
-            messagebox.showwarning("Aviso", "Selecione uma opção para remover.")
+        tk.Label(self, text="Custo Furo Adicional (R$):").grid(row=0, column=0, sticky="w")
+        self.furo_entry = tk.Entry(self, width=10)
+        self.furo_entry.grid(row=0, column=1, padx=5, pady=5)
+        self.furo_entry.insert(0, str(self.config_data.get("custo_furo_adicional", 5.00)))
+
+        tk.Label(self, text="Custo Corte Adicional (R$):").grid(row=1, column=0, sticky="w")
+        self.corte_entry = tk.Entry(self, width=10)
+        self.corte_entry.grid(row=1, column=1, padx=5, pady=5)
+        self.corte_entry.insert(0, str(self.config_data.get("custo_corte_adicional", 6.00)))
+
+        tk.Label(self, text="Custo Vinco Adicional (R$):").grid(row=2, column=0, sticky="w")
+        self.vinco_entry = tk.Entry(self, width=10)
+        self.vinco_entry.grid(row=2, column=1, padx=5, pady=5)
+        self.vinco_entry.insert(0, str(self.config_data.get("custo_vinco_adicional", 6.00)))
+
+        btn_save = tk.Button(self, text="Salvar Configurações", command=self.save_config)
+        btn_save.grid(row=3, column=0, columnspan=2, pady=10)
+
+    def save_config(self):
+        try:
+            custo_furo = float(self.furo_entry.get())
+            custo_corte = float(self.corte_entry.get())
+            custo_vinco = float(self.vinco_entry.get())
+        except ValueError:
+            messagebox.showerror("Erro", "Por favor, insira valores numéricos válidos.")
             return
-        for index in reversed(selected):
-            lb.delete(index)
-    
-    def salvar_configuracoes(self):
-        nova_config = {}
-        for cat, lb in self.listboxes.items():
-            nova_config[cat] = list(lb.get(0, tk.END))
-        salvar_config(nova_config)
+
+        self.config_data["custo_furo_adicional"] = custo_furo
+        self.config_data["custo_corte_adicional"] = custo_corte
+        self.config_data["custo_vinco_adicional"] = custo_vinco
+        config_handler.save_config(self.config_data)
         messagebox.showinfo("Sucesso", "Configurações salvas com sucesso!")
         self.destroy()

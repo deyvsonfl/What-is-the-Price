@@ -25,10 +25,7 @@ def criar_tabela():
     conn.close()
 
 def inserir_combinacao(acabamento, papel, faca, impressao, precos):
-    """
-    Insere uma nova combinação no banco.
-    O parâmetro `precos` é um dicionário que será convertido para JSON.
-    """
+    """Insere uma nova combinação no banco. O parâmetro `precos` é um dicionário convertido para JSON."""
     precos_str = json.dumps(precos)
     conn = conectar()
     c = conn.cursor()
