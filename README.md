@@ -31,7 +31,7 @@ Execute o seguinte comando para testar se o Tkinter está funcionando:
 3. **Execute o programa:**
 `python main.py`
 
-##Estrutura do Projeto
+## Estrutura do Projeto
 
 - **db_handler.py:** Módulo responsável pela conexão com o banco de dados SQLite, criação da tabela e operações CRUD (inserir, buscar, atualizar, excluir e listar combinações).
 - **ui.py:** Contém a interface gráfica (Tkinter) que permite consultar preços, cadastrar novas combinações, editar e excluir combinações já cadastradas, além de gerenciar as linhas de preços (com a funcionalidade de remoção apenas a partir da segunda linha).
