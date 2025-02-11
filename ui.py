@@ -21,12 +21,13 @@ class BudgetApp(tk.Tk):
             "Verniz UV Total Frente",
             "Laminação Fosca",
             "Laminação Fosca c/ Verniz Localizado",
+            "Laminação Fosca c/ Hot Stamping",
         ]
         self.opcoes_papel = [
             "Papel Couchê 250g",
             "Papel Couchê 300g",
             "Papel Supremo 300g",
-            "Papel Kraft 240g"
+            "Papel Kraft 240g",
         ]
         self.opcoes_impressao = ["Impressão apenas frente", "Impressão frente e verso"]
         self.opcoes_faca = ["4,25x4,8cm", "8,8x4,8cm", "9,94x8,8cm"]
